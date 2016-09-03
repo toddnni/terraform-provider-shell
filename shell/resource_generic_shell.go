@@ -43,10 +43,13 @@ func resourceGenericShell() *schema.Resource {
 func resourceGenericShellCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	command := config.CreateCommand
 	wd := config.WorkingDirectory
+	command, err := interpolateCommand(config.CreateCommand, config.CreateParameters, argumentsAsStrings(d))
+	if err != nil {
+		return err
+	}
 	log.Printf("[DEBUG] Creating generic resource: %s", command)
-	_, err := runCommand(command, wd)
+	_, err = runCommand(command, wd)
 	if err != nil {
 		return err
 	}
@@ -60,8 +63,11 @@ func resourceGenericShellCreate(d *schema.ResourceData, meta interface{}) error 
 func resourceGenericShellRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	command := config.ReadCommand
 	wd := config.WorkingDirectory
+	command, err := interpolateCommand(config.ReadCommand, config.ReadParameters, argumentsAsStrings(d))
+	if err != nil {
+		return err
+	}
 	log.Printf("[DEBUG] Reading generic resource: %s", command)
 	output, err := runCommand(command, wd)
 	if err != nil {
@@ -98,16 +104,51 @@ func resourceGenericShellRead(d *schema.ResourceData, meta interface{}) error {
 func resourceGenericShellDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	command := config.DeleteCommand
 	wd := config.WorkingDirectory
+	command, err := interpolateCommand(config.DeleteCommand, config.DeleteParameters, argumentsAsStrings(d))
+	if err != nil {
+		return err
+	}
 	log.Printf("[DEBUG] Deleting generic resource: %s", command)
-	_, err := runCommand(command, wd)
+	_, err = runCommand(command, wd)
 	if err != nil {
 		return err
 	}
 
 	d.SetId("")
 	return nil
+}
+
+func argumentsAsStrings(d *schema.ResourceData) map[string]string {
+	args := make(map[string]string)
+	for key, val := range d.Get("arguments").(map[string]interface{}) {
+		args[key] = val.(string)
+	}
+	return args
+}
+
+func interpolateCommand(command string, parameters []interface{}, arguments map[string]string) (string, error) {
+	if len(parameters) == 0 {
+		return command, nil
+	}
+
+	inputArgs := make([]interface{}, len(parameters))
+	for i, p := range parameters {
+		if v, ok := arguments[p.(string)]; ok {
+			inputArgs[i] = v
+		} else {
+			return "", fmt.Errorf("Error interpolating command '%s', parameter '%s' missing.", command, p)
+		}
+	}
+	log.Printf("[DEBUG] Interpolating, command '%s' and args: '%v'", command, inputArgs)
+	newCommand := fmt.Sprintf(command, inputArgs...)
+
+	pos := strings.Index(newCommand, "%!")
+	if pos != -1 {
+		return "", fmt.Errorf("Error interpolating command '%s' using args '%v'", newCommand, inputArgs)
+	}
+
+	return newCommand, nil
 }
 
 const (

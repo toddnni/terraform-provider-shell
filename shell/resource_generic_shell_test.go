@@ -101,6 +101,38 @@ func TestAccGenericShellProvider_WeirdOutput(t *testing.T) {
 	})
 }
 
+func TestAccGenericShellProvider_Parameters(t *testing.T) {
+	const testConfig = `
+	provider "shell" {
+		create_command = "echo \"%s\" > %s"
+		create_parameters = [ "output", "file" ]
+		read_command = "awk '{print \"out=\" $0}' %s"
+		read_parameters = [ "file" ]
+		delete_command = "rm %s"
+		delete_parameters = [ "file" ]
+	}
+	resource "shell_resource" "test" {
+		arguments {
+			output = "param value"
+			file = "file4"
+		}
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckGenericShellDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResource("shell_resource.test", "out", "param value"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckResource(name string, outparam string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
