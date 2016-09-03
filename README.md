@@ -33,6 +33,12 @@ $ terraform destroy
 
 ## Building from source
 
+1.  [Install Go](https://golang.org/doc/install) on your machine
+2.  [Set up Gopath](https://golang.org/doc/code.html)
+3.  `git clone` this repository into `$GOPATH/src/github.com/toddnni/terraform-provider-shell`
+4.  Get the dependencies. Run `go get`
+6.  `make install`. You will now find the
+    binary at `$GOPATH/bin/terraform-provider-shell`.
 
 ## Running
 
@@ -42,12 +48,15 @@ $ terraform destroy
 
 ## Running acceptance tests
 
+```console
+make test
+```
 
 ## Known Problems
 
 * Whenever command is changed the resource will be rebuilt.
 * The provider won't support `Update` operation.
-* 
+* a
 
 ## Author
 
