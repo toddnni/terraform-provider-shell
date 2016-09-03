@@ -57,6 +57,7 @@ make test
 * Whenever a command is changed the resource will be rebuilt.
 * The provider won't support `Update` operation.
 * The provider won't print output of the commands.
+* The provider will error instead of removing the resource if the delete command fails. However, this is a safe default.
 
 ## Author
 
