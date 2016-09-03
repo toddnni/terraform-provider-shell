@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/armon/circbuf"
-	//"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -24,7 +23,6 @@ func resourceGenericShell() *schema.Resource {
 		// desc: will always recreate the resource if something is changed
 		// will output variables but we don't define them here
 		// eg. if contains access_ipv4
-		// TODO seems to always create new if something is changed, because otherwise would need dynamic schema. Hmm or could we have a list of variables in schema and change of one wouldn't recreate the instance?
 
 		Schema: map[string]*schema.Schema{
 			"create_command": &schema.Schema{
@@ -32,9 +30,7 @@ func resourceGenericShell() *schema.Resource {
 				Required:    true,
 				Description: "Command to create a resource",
 				ForceNew:    true,
-				//StateFunc:   cmdStateFunc,
 			},
-			// TODO test this working dir
 			"working_directory": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -42,20 +38,17 @@ func resourceGenericShell() *schema.Resource {
 				ForceNew:    true,
 				Default:     ".",
 			},
-			// no Id to use as Id refers to create_command
 			"read_command": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Command to read status of a resource",
-				ForceNew:    true, // TODO this parameter should not be saved here at all :o/ ?? maybe if we just would use var.module
-				//StateFunc:   cmdStateFunc,
+				ForceNew:    true,
 			},
 			"delete_command": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Command to delete a resource",
 				ForceNew:    true,
-				//StateFunc:   cmdStateFunc,
 			},
 			"output": &schema.Schema{
 				Type:        schema.TypeMap,
@@ -63,14 +56,6 @@ func resourceGenericShell() *schema.Resource {
 				Description: "Output from the read command",
 			},
 		},
-		/*if preferredSSHAddress != "" {
-			// Initialize the connection info
-			d.SetConnInfo(map[string]string{
-				"type": "ssh",
-				"host": preferredSSHAddress,
-			})
-		}
-		*/
 	}
 }
 
@@ -116,13 +101,10 @@ func resourceGenericShellRead(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("[INFO] Generic, ignoring line without equal sign: \"%s\"", varline)
 			continue
 		}
-		// TODO test resource exists
 
-		// TODO test tricky vars (a b = safs = sd sdfsaxäxcf)
 		key := varline[:pos]
 		value := varline[pos+1:]
 		log.Printf("[DEBUG] Generic: \"%s\" = \"%s\"", key, value)
-		// TODO test keys
 		outputs[key] = value
 	}
 	d.Set("output", outputs)
@@ -197,16 +179,6 @@ func runCommand(command string, working_dir string) (string, error) {
 	log.Printf("[DEBUG] generic shell resource command output was: \"%s\"", output)
 
 	return output.String(), nil
-}
-
-func cmdStateFunc(value interface{}) string {
-	s, ok := value.(string)
-	if !ok {
-		panic("Command not string in cmdStateFunc")
-	}
-
-	sha := sha256.Sum256([]byte(s))
-	return hex.EncodeToString(sha[:])
 }
 
 func hash(s string) string {

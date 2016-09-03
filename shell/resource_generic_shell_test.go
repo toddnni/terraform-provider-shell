@@ -13,6 +13,7 @@ import (
 func TestAccGenericShellProvider_Basic(t *testing.T) {
 	const testConfig = `
 	resource "shell_resource" "test" {
+		working_directory = "${path.module}"
 		create_command = "echo \"hi\" > test_file"
 		read_command = "awk '{print \"out=\" $0}' test_file"
 		delete_command = "rm test_file"
@@ -69,6 +70,29 @@ func TestAccGenericShellProvider_Update(t *testing.T) {
 	})
 }
 
+func TestAccGenericShellProvider_WeirdOutput(t *testing.T) {
+	const testConfig = `
+	resource "shell_resource" "test" {
+		create_command = "echo \" can you = read this\" > test_file3"
+		read_command = "awk '{print \"out=\" $0}' test_file3"
+		delete_command = "rm test_file3"
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckGenericShellDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResource("shell_resource.test", "out", " can you = read this"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckResource(name string, outparam string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -80,7 +104,7 @@ func testAccCheckResource(name string, outparam string, value string) resource.T
 		}
 
 		if expected, got := value, rs.Primary.Attributes["output."+outparam]; got != expected {
-			return fmt.Errorf("Wrong value in output %s=%s, expected %s", outparam, got, expected)
+			return fmt.Errorf("Wrong value in output '%s=%s', expected '%s'", outparam, got, expected)
 		}
 		return nil
 	}
