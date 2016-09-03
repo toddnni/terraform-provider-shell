@@ -127,7 +127,6 @@ func resourceGenericShellDelete(d *schema.ResourceData, meta interface{}) error 
 }
 
 const (
-	// TODO copied from provisioners/local-exec
 	// maxBufSize limits how much output we collect from a local
 	// invocation. This is to prevent TF memory usage from growing
 	// to an enormous amount due to a faulty process.
@@ -135,7 +134,6 @@ const (
 )
 
 func runCommand(command string, working_dir string) (string, error) {
-	// TODO copied from provisioners/local-exec
 	// Execute the command using a shell
 	var shell, flag string
 	if runtime.GOOS == "windows" {
@@ -146,30 +144,18 @@ func runCommand(command string, working_dir string) (string, error) {
 		flag = "-c"
 	}
 
-	// Setup the reader that will read the lines from the command
-	//pr, pw := io.Pipe()
-	//copyDoneCh := make(chan struct{})
-	////go p.copyOutput(o, pr, copyDoneCh)
-
 	// Setup the command
 	command = fmt.Sprintf("cd %s && %s", working_dir, command)
 	cmd := exec.Command(shell, flag, command)
 	output, _ := circbuf.NewBuffer(maxBufSize)
 	cmd.Stderr = io.Writer(output)
 	cmd.Stdout = io.Writer(output)
-	//cmd.Stderr = io.MultiWriter(output, pw)
-	//cmd.Stdout = io.MultiWriter(output, pw)
 
 	// Output what we're about to run
 	log.Printf("[DEBUG] generic shell resource going to execute: %s %s \"%s\"", shell, flag, command)
 
 	// Run the command to completion
 	err := cmd.Run()
-
-	// Close the write-end of the pipe so that the goroutine mirroring output
-	// ends properly.
-	//pw.Close()
-	//<-copyDoneCh
 
 	if err != nil {
 		return "", fmt.Errorf("Error running command '%s': '%v'. Output: %s",

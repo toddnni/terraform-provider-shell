@@ -54,9 +54,9 @@ make test
 
 ## Known Problems
 
-* Whenever command is changed the resource will be rebuilt.
+* Whenever a command is changed the resource will be rebuilt.
 * The provider won't support `Update` operation.
-* a
+* The provider won't print output of the commands.
 
 ## Author
 
