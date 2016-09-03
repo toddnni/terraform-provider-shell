@@ -25,29 +25,10 @@ func resourceGenericShell() *schema.Resource {
 		// eg. if contains access_ipv4
 
 		Schema: map[string]*schema.Schema{
-			"create_command": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Command to create a resource",
-				ForceNew:    true,
-			},
-			"working_directory": &schema.Schema{
-				Type:        schema.TypeString,
+			"arguments": &schema.Schema{
+				Type:        schema.TypeMap,
 				Optional:    true,
-				Description: "A working directory where to run the commands",
-				ForceNew:    true,
-				Default:     ".",
-			},
-			"read_command": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Command to read status of a resource",
-				ForceNew:    true,
-			},
-			"delete_command": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Command to delete a resource",
+				Description: "The input arguments for commands",
 				ForceNew:    true,
 			},
 			"output": &schema.Schema{
@@ -60,9 +41,10 @@ func resourceGenericShell() *schema.Resource {
 }
 
 func resourceGenericShellCreate(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*Config)
 
-	command := d.Get("create_command").(string)
-	wd := d.Get("working_directory").(string)
+	command := config.CreateCommand
+	wd := config.WorkingDirectory
 	log.Printf("[DEBUG] Creating generic resource: %s", command)
 	_, err := runCommand(command, wd)
 	if err != nil {
@@ -76,9 +58,10 @@ func resourceGenericShellCreate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceGenericShellRead(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*Config)
 
-	command := d.Get("read_command").(string)
-	wd := d.Get("working_directory").(string)
+	command := config.ReadCommand
+	wd := config.WorkingDirectory
 	log.Printf("[DEBUG] Reading generic resource: %s", command)
 	output, err := runCommand(command, wd)
 	if err != nil {
@@ -113,9 +96,10 @@ func resourceGenericShellRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceGenericShellDelete(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*Config)
 
-	command := d.Get("delete_command").(string)
-	wd := d.Get("working_directory").(string)
+	command := config.DeleteCommand
+	wd := config.WorkingDirectory
 	log.Printf("[DEBUG] Deleting generic resource: %s", command)
 	_, err := runCommand(command, wd)
 	if err != nil {

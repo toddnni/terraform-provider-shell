@@ -12,11 +12,13 @@ import (
 
 func TestAccGenericShellProvider_Basic(t *testing.T) {
 	const testConfig = `
-	resource "shell_resource" "test" {
-		working_directory = "${path.module}"
+	provider "shell" {
+		working_directory = "."
 		create_command = "echo \"hi\" > test_file"
 		read_command = "awk '{print \"out=\" $0}' test_file"
 		delete_command = "rm test_file"
+	}
+	resource "shell_resource" "test" {
 	}
 `
 
@@ -36,17 +38,21 @@ func TestAccGenericShellProvider_Basic(t *testing.T) {
 
 func TestAccGenericShellProvider_Update(t *testing.T) {
 	const testConfig1 = `
-	resource "shell_resource" "test" {
+	provider "shell" {
 		create_command = "echo \"hi\" > test_file"
 		read_command = "awk '{print \"out=\" $0}' test_file"
 		delete_command = "rm test_file"
 	}
+	resource "shell_resource" "test" {
+	}
 `
 	const testConfig2 = `
-	resource "shell_resource" "test" {
+	provider "shell" {
 		create_command = "echo \"hi all\" > test_file2"
 		read_command = "awk '{print \"out=\" $0}' test_file2"
 		delete_command = "rm test_file2"
+	}
+	resource "shell_resource" "test" {
 	}
 `
 
@@ -72,10 +78,12 @@ func TestAccGenericShellProvider_Update(t *testing.T) {
 
 func TestAccGenericShellProvider_WeirdOutput(t *testing.T) {
 	const testConfig = `
-	resource "shell_resource" "test" {
+	provider "shell" {
 		create_command = "echo \" can you = read this\" > test_file3"
 		read_command = "awk '{print \"out=\" $0}' test_file3"
 		delete_command = "rm test_file3"
+	}
+	resource "shell_resource" "test" {
 	}
 `
 
