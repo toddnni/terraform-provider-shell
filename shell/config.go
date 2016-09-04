@@ -8,5 +8,4 @@ type Config struct {
 	ReadParameters   []interface{}
 	DeleteCommand    string
 	DeleteParameters []interface{}
-	UniqueParameters map[string]struct{}
 }

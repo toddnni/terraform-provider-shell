@@ -68,15 +68,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		DeleteParameters: d.Get("delete_parameters").([]interface{}),
 	}
 
-	for _, p := range config.CreateParameters {
-		config.UniqueParameters[p.(string)] = struct{}{}
-	}
-	for _, p := range config.ReadParameters {
-		config.UniqueParameters[p.(string)] = struct{}{}
-	}
-	for _, p := range config.DeleteParameters {
-		config.UniqueParameters[p.(string)] = struct{}{}
-	}
-
 	return &config, nil
 }
