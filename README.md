@@ -36,6 +36,30 @@ $ terraform apply
 $ terraform destroy
 ```
 
+To create a more complete example add this to the sample example file
+
+```hcl
+provider "shell" {
+   alias = "write_to_file"
+   create_command = "echo \"%s\" > %s"
+   create_parameters = [ "input", "file" ]
+   read_command = "awk '{print \"out=\" $0}' %s"
+   read_parameters = [ "file" ]
+   delete_command = "rm %s"
+   delete_parameters = [ "file" ]
+}
+
+resource "shell_resource" "filetest" {
+  provider = "shell.write_to_file"
+  arguments {
+    input = "this to the file"
+    file = "test_file2"
+  }
+}
+```
+
+Parameters can by used to change the resources.
+
 ## Building from source
 
 1.  [Install Go](https://golang.org/doc/install) on your machine
