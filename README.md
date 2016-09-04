@@ -25,6 +25,9 @@ provider "shell" {
   read_command = "awk '{print \"out=\" $0}' test_file"
   delete_command = "rm test_file"
 }
+
+resource "shell_resource" "test" {
+}
 ```
 
 ```console
