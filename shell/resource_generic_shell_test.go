@@ -36,46 +36,6 @@ func TestAccGenericShellProvider_Basic(t *testing.T) {
 	})
 }
 
-func TestAccGenericShellProvider_Update(t *testing.T) {
-	const testConfig1 = `
-	provider "shell" {
-		create_command = "echo \"hi\" > test_file"
-		read_command = "awk '{print \"out=\" $0}' test_file"
-		delete_command = "rm test_file"
-	}
-	resource "shell_resource" "test" {
-	}
-`
-	const testConfig2 = `
-	provider "shell" {
-		create_command = "echo \"hi all\" > test_file2"
-		read_command = "awk '{print \"out=\" $0}' test_file2"
-		delete_command = "rm test_file2"
-	}
-	resource "shell_resource" "test" {
-	}
-`
-
-	resource.Test(t, resource.TestCase{
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckGenericShellDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testConfig1,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResource("shell_resource.test", "out", "hi"),
-				),
-			},
-			resource.TestStep{
-				Config: testConfig2,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckResource("shell_resource.test", "out", "hi all"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccGenericShellProvider_WeirdOutput(t *testing.T) {
 	const testConfig = `
 	provider "shell" {
@@ -127,6 +87,60 @@ func TestAccGenericShellProvider_Parameters(t *testing.T) {
 				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckResource("shell_resource.test", "out", "param value"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGenericShellProvider_Update(t *testing.T) {
+	const testConfig1 = `
+	provider "shell" {
+		create_command = "echo \"%s\" > %s"
+		create_parameters = [ "output", "file" ]
+		read_command = "awk '{print \"out=\" $0}' %s"
+		read_parameters = [ "file" ]
+		delete_command = "rm %s"
+		delete_parameters = [ "file" ]
+	}
+	resource "shell_resource" "test" {
+		arguments {
+			output = "hi"
+			file = "testfileU1"
+		}
+	}
+`
+	const testConfig2 = `
+	provider "shell" {
+		create_command = "echo \"%s\" > %s"
+		create_parameters = [ "output", "file" ]
+		read_command = "awk '{print \"out=\" $0}' %s"
+		read_parameters = [ "file" ]
+		delete_command = "rm %s"
+		delete_parameters = [ "file" ]
+	}
+	resource "shell_resource" "test" {
+		arguments {
+			output = "hi all"
+			file = "testfileU2"
+		}
+	}
+`
+
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckGenericShellDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testConfig1,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResource("shell_resource.test", "out", "hi"),
+				),
+			},
+			resource.TestStep{
+				Config: testConfig2,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckResource("shell_resource.test", "out", "hi all"),
 				),
 			},
 		},
