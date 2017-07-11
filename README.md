@@ -77,7 +77,6 @@ make test
 
 ## Known Problems
 
-* The provider needs a change in core terraform module interface. See [PR](https://github.com/hashicorp/terraform/pull/8649)
 * The provider won't support `Update` CRUD operation.
 * The provider won't print output of the commands.
 * The provider will error instead of removing the resource if the delete command fails. However, this is a safe default.
