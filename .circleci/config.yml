@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Dependencies
           command: goreleaser
-  release:
+  package:
     docker:
       - image: circleci/golang:1.9
     working_directory: /go/src/github.com/Brightspace/terraform-provider-shell
@@ -35,7 +35,7 @@ workflows:
   build:
     jobs:
       - build
-      - release:
+      - package:
           filters:
             tags:
               only: /V.*/
