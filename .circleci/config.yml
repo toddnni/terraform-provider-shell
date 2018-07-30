@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Dependencies
           command: go get -v -t -d
-        - run:
+      - run:
           name: Build
           command: go get -v -t -d
       - run:
