@@ -90,6 +90,10 @@ The structure is inspired from the [Softlayer](https://github.com/finn-no/terraf
 
 Some code has been adapted from local-exec provisioner from terraform core.
 
+## TODO
+
+- docs: changes in provider scripts are not reflected to resources
+
 ## License
 
 * MIT, See LICENSE file
